@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
 
     int itemIndex;
     int previousItemIndex = -1;
+    public float nextTimeToFire = 0f;
 
     bool grounded;
     Vector3 smoothMoveVelocity;
@@ -100,9 +101,19 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
             hash.Add("itemIndex", itemIndex);
             PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
         }
-        if(Input.GetMouseButtonDown(0))
+        if(((GunInfo)items[itemIndex].itemInfo).isAutomatic)
         {
-            items[itemIndex].Use();    
+            while(Input.GetMouseButton(0) && Time.time >= nextTimeToFire)
+            {
+                Debug.Log("pew");
+
+                Shoot();
+            }
+        }
+        else if(Input.GetMouseButtonDown(0))
+        {
+            Debug.Log(((GunInfo)items[itemIndex].itemInfo).isAutomatic);
+            Shoot();
         }
         
 
@@ -110,6 +121,11 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
         {
             Die();
         }
+    }
+    private void Shoot()
+    {
+        nextTimeToFire = Time.time + 1f / ((GunInfo)items[itemIndex].itemInfo).fireRate;
+        items[itemIndex].Use();    
     }
 
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)

@@ -13,4 +13,6 @@ MonoBehaviour:
   m_Name: Rifle
   m_EditorClassIdentifier: 
   itemName: Rifle
+  fireRate: 750
+  isAutomatic: 1
   damage: 25

@@ -6,6 +6,5 @@ public abstract class Item : MonoBehaviour
 {
     public ItemInfo itemInfo;
     public GameObject itemGameObject;
-    public bool isAutomatic;
     public abstract void Use();
 }

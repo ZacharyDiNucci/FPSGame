@@ -13,7 +13,7 @@ public abstract class Gun : Item
     public Transform effectOrigin;
 
     public bool AddBulletSpread = true;
-    public Vector3 BulletSpreadVariance = new Vector3(0.1f,0.1f,0.1f);
+    public Vector3 BulletSpreadVariance = new Vector3(0.1f,0.1f,0);
 
     public float ShootDelay = 0.5f;
 

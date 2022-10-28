@@ -5,4 +5,6 @@ using UnityEngine;
 public class ItemInfo : ScriptableObject
 {
     public string itemName;
+    public int fireRate;
+    public bool isAutomatic;
 }
