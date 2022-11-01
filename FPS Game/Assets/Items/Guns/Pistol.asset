@@ -14,5 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Pistol
   fireRate: 1
+  MaxAmmo: 100
+  MaxMag: 15
+  CurrentAmmo: 15
   isAutomatic: 0
   damage: 15

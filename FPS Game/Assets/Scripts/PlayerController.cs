@@ -105,8 +105,6 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
         {
             while(Input.GetMouseButton(0) && Time.time >= nextTimeToFire)
             {
-                Debug.Log("pew");
-
                 Shoot();
             }
         }
@@ -210,5 +208,37 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
     void Die()
     {
         playerManager.Die();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "HealthPack")
+        {
+            if(currentHealth <= MaxHealth + 25.0f)
+            {
+                Destroy(other);
+                pv.RPC("RPC_Heal", RpcTarget.All, 25.0f);
+            }
+            else if(currentHealth < MaxHealth)
+            {
+                Destroy(other);
+                pv.RPC("RPC_Heal", RpcTarget.All, MaxHealth);
+            }
+        }
+    }
+
+    [PunRPC]
+    void RPC_Heal(float heal)
+    {
+        if(!pv.IsMine)
+        {
+            return;
+        }
+        if(heal != MaxHealth)
+        {
+            currentHealth += heal;
+        }
+        else currentHealth = MaxHealth;
+        healthBarImage.fillAmount = currentHealth / MaxHealth;
     }
 }

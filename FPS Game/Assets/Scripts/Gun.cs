@@ -22,4 +22,10 @@ public abstract class Gun : Item
     public float LastShootTime;
     public float Speed;
     public bool madeImpact;
+
+    public int MaxAmmo;
+    public int MaxMag;
+    public int CurrentAmmo;
+    public int ReloadTime;
+    
 }

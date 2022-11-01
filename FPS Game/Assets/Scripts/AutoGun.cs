@@ -10,31 +10,43 @@ public class AutoGun : Gun
 
     PhotonView pv;
 
+    bool canShoot = true;
+
     void Awake() {
         pv = GetComponent<PhotonView>();
     }
     public override void Use()
     {
-        if(LastShootTime + ShootDelay < Time.time)
-        {
-            Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
-            ray.origin = cam.transform.position;
+        // if(LastShootTime + ShootDelay < Time.time)
+        // {
+            if(canShoot){
+                if(CurrentAmmo <=0)
+                {
+                    canShoot = false;
+                    pv.RPC("RPC_Reload", RpcTarget.All);
+                    return;
+                }
+                CurrentAmmo--;
 
-            Vector3 direction = GetDirection();
-            if(Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, mask))
-            {
-                madeImpact = true;
-                hit.collider.gameObject.GetComponent<IDamageable>()?.TakeDamage(((GunInfo)itemInfo).damage);
-                pv.RPC("RPC_Shoot", RpcTarget.All, hit.point, hit.normal);
+                Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+                ray.origin = cam.transform.position;
 
+                Vector3 direction = GetDirection();
+                if(Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, mask))
+                {
+                    madeImpact = true;
+                    hit.collider.gameObject.GetComponent<IDamageable>()?.TakeDamage(((GunInfo)itemInfo).damage);
+                    pv.RPC("RPC_Shoot", RpcTarget.All, hit.point, hit.normal);
+
+                }
+                else
+                {
+                    madeImpact = false;
+                    pv.RPC("RPC_ShootMiss", RpcTarget.All, direction * 100f, hit.normal);
+                }
+                LastShootTime = Time.time;
             }
-            else
-            {
-                madeImpact = false;
-                pv.RPC("RPC_ShootMiss", RpcTarget.All, direction * 100f, hit.normal);
-            }
-            LastShootTime = Time.time;
-        }
+        //}
     }
 
     private Vector3 GetDirection()
@@ -96,5 +108,33 @@ public class AutoGun : Gun
     {
         TrailRenderer trail = Instantiate(bulletTrailPrefab, effectOrigin.position, Quaternion.identity);
         StartCoroutine(SpawnTrail(trail, direction * 100f, hitNormal));
+    }
+
+    [PunRPC]
+    void RPC_Reload()
+    {
+        if(!pv.IsMine)
+        {
+            return;
+        }
+
+        StartCoroutine(Reload());
+    }
+
+    private IEnumerator Reload()
+    {
+        yield return new WaitForSeconds(ReloadTime);
+
+        if(MaxAmmo >= (MaxMag - CurrentAmmo))
+        {
+            MaxAmmo = MaxAmmo - (MaxMag - CurrentAmmo);
+            CurrentAmmo = MaxMag;
+        } else
+        {
+            CurrentAmmo = MaxAmmo;
+            MaxAmmo = 0;
+        }
+
+        canShoot = true;
     }
 }

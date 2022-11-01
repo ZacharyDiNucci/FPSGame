@@ -9,7 +9,7 @@ public class SingleShotGun : Gun
     [SerializeField] Camera cam;
 
     
-
+    bool canShoot = true;
 
     PhotonView pv;
 
@@ -20,23 +20,33 @@ public class SingleShotGun : Gun
     {
         if(LastShootTime + ShootDelay < Time.time)
         {
-            Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
-            ray.origin = cam.transform.position;
+            if(canShoot){
+                if(CurrentAmmo <=0)
+                {
+                    canShoot = false;
+                    pv.RPC("RPC_Reload", RpcTarget.All);
+                    return;
+                }
+                CurrentAmmo--;
 
-            Vector3 direction = GetDirection();
-            if(Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, mask))
-            {
-                madeImpact = true;
-                hit.collider.gameObject.GetComponent<IDamageable>()?.TakeDamage(((GunInfo)itemInfo).damage);
-                pv.RPC("RPC_Shoot", RpcTarget.All, hit.point, hit.normal);
+                Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+                ray.origin = cam.transform.position;
 
+                Vector3 direction = GetDirection();
+                if(Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, mask))
+                {
+                    madeImpact = true;
+                    hit.collider.gameObject.GetComponent<IDamageable>()?.TakeDamage(((GunInfo)itemInfo).damage);
+                    pv.RPC("RPC_Shoot", RpcTarget.All, hit.point, hit.normal);
+
+                }
+                else
+                {
+                    madeImpact = false;
+                    pv.RPC("RPC_ShootMiss", RpcTarget.All, direction * 100f, hit.normal);
+                }
+                LastShootTime = Time.time;
             }
-            else
-            {
-                madeImpact = false;
-                pv.RPC("RPC_ShootMiss", RpcTarget.All, direction * 100f, hit.normal);
-            }
-            LastShootTime = Time.time;
         }
     }
 
@@ -99,5 +109,34 @@ public class SingleShotGun : Gun
     {
         TrailRenderer trail = Instantiate(bulletTrailPrefab, effectOrigin.position, Quaternion.identity);
         StartCoroutine(SpawnTrail(trail, direction * 100f, hitNormal));
+    }
+
+    
+    [PunRPC]
+    void RPC_Reload()
+    {
+        if(!pv.IsMine)
+        {
+            return;
+        }
+
+        StartCoroutine(Reload());
+    }
+
+    private IEnumerator Reload()
+    {
+        yield return new WaitForSeconds(ReloadTime);
+
+        if(MaxAmmo >= (MaxMag - CurrentAmmo))
+        {
+            MaxAmmo = MaxAmmo - (MaxMag - CurrentAmmo);
+            CurrentAmmo = MaxMag;
+        } else
+        {
+            CurrentAmmo = MaxAmmo;
+            MaxAmmo = 0;
+        }
+
+        canShoot = true;
     }
 }
