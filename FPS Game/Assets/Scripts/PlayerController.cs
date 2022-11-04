@@ -110,10 +110,13 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
         }
         else if(Input.GetMouseButtonDown(0))
         {
-            Debug.Log(((GunInfo)items[itemIndex].itemInfo).isAutomatic);
             Shoot();
         }
         
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            items[itemIndex].Reload();
+        }
 
         if (transform.position.y <= -10f)
         {
@@ -123,7 +126,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
     private void Shoot()
     {
         nextTimeToFire = Time.time + 1f / ((GunInfo)items[itemIndex].itemInfo).fireRate;
-        items[itemIndex].Use();    
+        items[itemIndex].Use();
     }
 
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
@@ -175,6 +178,8 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
         {
             return;
         }
+        items[itemIndex].StopReload();
+
         itemIndex = _index;
         items[itemIndex].itemGameObject.SetActive(true);
 
@@ -183,6 +188,8 @@ public class PlayerController : MonoBehaviourPunCallbacks, IDamageable
             items[previousItemIndex].itemGameObject.SetActive(false);
         }
         previousItemIndex = itemIndex;
+        items[itemIndex].ResumeReload();
+        items[itemIndex].UpdateUI();
     }
 
     public void TakeDamage(float damage)

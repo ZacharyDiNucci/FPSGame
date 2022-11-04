@@ -10,6 +10,7 @@ public class AutoGun : Gun
 
     PhotonView pv;
 
+    bool reloadStopped = false;
     bool canShoot = true;
 
     void Awake() {
@@ -27,6 +28,7 @@ public class AutoGun : Gun
                     return;
                 }
                 CurrentAmmo--;
+                UpdateUI();
 
                 Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
                 ray.origin = cam.transform.position;
@@ -47,6 +49,43 @@ public class AutoGun : Gun
                 LastShootTime = Time.time;
             }
         //}
+    }
+
+    public override void UpdateUI()
+    {
+        UpdateAmmoUI();
+    }
+
+    public override void Reload()
+    {
+        if(CurrentAmmo == MaxMag)
+        {
+            return;
+        }
+        canShoot = false;
+        pv.RPC("RPC_Reload", RpcTarget.All);
+        return;
+    }
+
+    public override void StopReload()
+    {
+        if(canShoot)
+        {
+            return;
+        }
+        reloadStopped = true;
+        StopCoroutine(ReloadGun());
+    }
+
+    public override void ResumeReload()
+    {
+        if(!reloadStopped)
+        {
+            return;
+        }
+        canShoot = false;
+        pv.RPC("RPC_Reload", RpcTarget.All);
+        return;
     }
 
     private Vector3 GetDirection()
@@ -118,10 +157,12 @@ public class AutoGun : Gun
             return;
         }
 
-        StartCoroutine(Reload());
+        StartCoroutine(ReloadGun());
+        UpdateUI();
+
     }
 
-    private IEnumerator Reload()
+    private IEnumerator ReloadGun()
     {
         yield return new WaitForSeconds(ReloadTime);
 
@@ -136,5 +177,10 @@ public class AutoGun : Gun
         }
 
         canShoot = true;
+    }
+
+    void UpdateAmmoUI()
+    {
+        ammoText.text = CurrentAmmo + " / " + MaxAmmo;
     }
 }

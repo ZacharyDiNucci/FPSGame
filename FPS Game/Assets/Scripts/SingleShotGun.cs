@@ -8,7 +8,7 @@ public class SingleShotGun : Gun
 {
     [SerializeField] Camera cam;
 
-    
+    bool reloadStopped = false;
     bool canShoot = true;
 
     PhotonView pv;
@@ -28,6 +28,7 @@ public class SingleShotGun : Gun
                     return;
                 }
                 CurrentAmmo--;
+                UpdateUI();
 
                 Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
                 ray.origin = cam.transform.position;
@@ -48,6 +49,44 @@ public class SingleShotGun : Gun
                 LastShootTime = Time.time;
             }
         }
+    }
+
+    public override void UpdateUI()
+    {
+        UpdateAmmoUI();
+    }
+
+    public override void Reload()
+    {
+        if(CurrentAmmo == MaxMag)
+        {
+            return;
+        }
+        canShoot = false;
+        pv.RPC("RPC_Reload", RpcTarget.All);
+        return;
+    }
+
+    public override void StopReload()
+    {
+        if(canShoot)
+        {
+            return;
+        }
+        reloadStopped = true;
+        StopCoroutine(ReloadGun());
+
+    }
+
+    public override void ResumeReload()
+    {
+        if(!reloadStopped)
+        {
+            return;
+        }
+        canShoot = false;
+        pv.RPC("RPC_Reload", RpcTarget.All);
+        return;
     }
 
     private Vector3 GetDirection()
@@ -119,11 +158,12 @@ public class SingleShotGun : Gun
         {
             return;
         }
-
-        StartCoroutine(Reload());
+    
+        StartCoroutine(ReloadGun());
+        UpdateUI();
     }
 
-    private IEnumerator Reload()
+    private IEnumerator ReloadGun()
     {
         yield return new WaitForSeconds(ReloadTime);
 
@@ -138,5 +178,10 @@ public class SingleShotGun : Gun
         }
 
         canShoot = true;
+    }
+
+    void UpdateAmmoUI()
+    {
+        ammoText.text = CurrentAmmo + " / " + MaxAmmo;
     }
 }

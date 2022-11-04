@@ -1,10 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public abstract class Gun : Item
 {
     public abstract override void Use();
+    public abstract override void UpdateUI();
+    public abstract override void Reload();
+    public abstract override void StopReload();
+    public abstract override void ResumeReload();
     
     public GameObject bulletImpactPrefab;
     public TrailRenderer bulletTrailPrefab;
@@ -27,5 +32,6 @@ public abstract class Gun : Item
     public int MaxMag;
     public int CurrentAmmo;
     public int ReloadTime;
+    public TMP_Text ammoText;
     
 }
