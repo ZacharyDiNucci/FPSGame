@@ -159,7 +159,7 @@ MonoBehaviour:
     type: 3}
   effectOrigin: {fileID: 1386133333308233874}
   AddBulletSpread: 1
-  BulletSpreadVariance: {x: 0.5, y: 0.5, z: 0.5}
+  BulletSpreadVariance: {x: 0.035, y: 0.035, z: 0.035}
   ShootDelay: 0.2
   mask:
     serializedVersion: 2
@@ -1172,7 +1172,7 @@ MonoBehaviour:
     type: 3}
   effectOrigin: {fileID: 7790528548223754850}
   AddBulletSpread: 1
-  BulletSpreadVariance: {x: 0.02, y: 0.02, z: 0.02}
+  BulletSpreadVariance: {x: 0.01, y: 0.01, z: 0.01}
   ShootDelay: 0.1
   mask:
     serializedVersion: 2

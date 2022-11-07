@@ -32,8 +32,13 @@ public class AutoGun : Gun
 
                 Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f));
                 ray.origin = cam.transform.position;
+                ray.direction += new Vector3(
+                UnityEngine.Random.Range(-BulletSpreadVariance.x, BulletSpreadVariance.x),
+                UnityEngine.Random.Range(-BulletSpreadVariance.y, BulletSpreadVariance.y),
+                0
 
-                Vector3 direction = GetDirection();
+                );
+
                 if(Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, mask))
                 {
                     madeImpact = true;
@@ -44,7 +49,7 @@ public class AutoGun : Gun
                 else
                 {
                     madeImpact = false;
-                    pv.RPC("RPC_ShootMiss", RpcTarget.All, direction * 100f, hit.normal);
+                    pv.RPC("RPC_ShootMiss", RpcTarget.All, ray.direction * 100f, hit.normal);
                 }
                 LastShootTime = Time.time;
             }
@@ -86,23 +91,6 @@ public class AutoGun : Gun
         canShoot = false;
         pv.RPC("RPC_Reload", RpcTarget.All);
         return;
-    }
-
-    private Vector3 GetDirection()
-    {
-        Vector3 direction = transform.forward;
-        if(AddBulletSpread)
-        {
-            direction += new Vector3(
-                UnityEngine.Random.Range(-BulletSpreadVariance.x, BulletSpreadVariance.x),
-                UnityEngine.Random.Range(-BulletSpreadVariance.y, BulletSpreadVariance.y),
-                UnityEngine.Random.Range(-BulletSpreadVariance.z, BulletSpreadVariance.z)
-
-            );
-
-            direction.Normalize();
-        }
-        return direction;
     }
 
     private IEnumerator SpawnTrail(TrailRenderer trail, Vector3 hitPoint, Vector3 hitNormal)
